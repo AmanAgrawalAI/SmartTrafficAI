@@ -1,156 +1,148 @@
+# SmartTrafficAI 🚦
 
-SmartTrafficAI
-🚦 AI-Based Intelligent Traffic Management & Emergency Vehicle Detection System
+**AI-based intelligent traffic management and emergency vehicle detection system**
 
-SmartTrafficAI is a Computer Vision–based intelligent traffic management system built using Python, YOLO, OpenCV, and EasyOCR.
+SmartTrafficAI is a computer-vision system built with Python, Ultralytics YOLO, OpenCV and EasyOCR. It analyzes traffic video, counts vehicles in three lanes, detects emergency vehicles (ambulance, fire truck, police), gives their lane priority on the signal, and reads license plates with OCR.
 
-The system analyzes live traffic video, detects vehicles in multiple lanes, prioritizes emergency vehicles, detects license plates, and dynamically selects the appropriate traffic signal based on traffic congestion.
+<!-- TODO: add a 30-60 second demo video or GIF here, e.g. ![Demo](assets/demo.gif) -->
 
-🎯 Project Features
-🚑 Detects emergency vehicles such as Ambulance, Fire Truck, and Police vehicles
-🚗 Detects and counts vehicles in Left, Middle, and Right lanes
-🚨 Automatically gives priority to the lane containing an emergency vehicle
-🚦 Dynamically controls traffic signals based on lane congestion
-🟢 Gives an emergency lane a longer green signal duration
-🟡 Assigns a waiting/yellow signal to the medium-priority lane
-🔴 Stops lower-priority lanes when required
-🔢 Detects vehicle license plates using a YOLO model
-📝 Reads detected license plate text using EasyOCR
-📊 Displays live vehicle count, active lane, green time, lane status, and emergency status
-🧠 How It Works
-1. Vehicle & Emergency Vehicle Detection
+---
 
-The system uses a custom YOLO model to detect traffic vehicles and emergency vehicles from video frames.
+## Results
 
-Emergency classes include:
+The emergency-vehicle model was trained on a custom dataset of **15,369 images** (train/val/test). The dataset combines Kaggle images with self-collected images that I annotated manually (Roboflow and CVAT), and the classes were balanced.
 
-Ambulance
-Fire Truck
-Police
+**Training setup:** YOLO11s (Ultralytics) · 50 epochs · 640 px · Tesla T4 GPU (Kaggle) · ~3.1 hours · ~4 ms inference per image
 
-When an emergency vehicle is detected, its lane is identified and given immediate traffic priority.
+**Validation performance (2,258 images, 2,883 instances):**
 
-2. Lane-Based Vehicle Counting
+| Class | Images | Instances | Precision | Recall | mAP@50 | mAP@50-95 |
+|---|---|---|---|---|---|---|
+| **All** | 2,258 | 2,883 | 0.934 | 0.898 | **0.949** | 0.801 |
+| Car | 792 | 925 | 0.950 | 0.936 | 0.974 | 0.869 |
+| Ambulance | 550 | 644 | 0.922 | 0.913 | 0.955 | 0.809 |
+| Police | 316 | 566 | 0.923 | 0.898 | 0.945 | 0.806 |
+| Fire truck | 629 | 748 | 0.941 | 0.846 | 0.921 | 0.718 |
 
-The video frame is divided into three lanes:
+Fire truck has the lowest recall and mAP@50-95, so adding more varied fire-truck images is the next dataset improvement.
 
-LEFT
-MIDDLE
-RIGHT
+<!-- TODO: add training plots, e.g.
+![Confusion Matrix](assets/confusion_matrix.png)
+![PR Curve](assets/PR_curve.png)
+-->
 
-Each detected vehicle is assigned to a lane based on the horizontal position of its bounding-box center.
+---
 
-The system then counts the number of vehicles in each lane.
+## Features
 
-3. Emergency Priority System
+- Detects emergency vehicles: ambulance, fire truck and police car
+- Detects and counts vehicles in the Left, Middle and Right lanes
+- Gives priority to the lane that contains an emergency vehicle
+- Selects the signal state for each lane from lane congestion
+- Gives the emergency lane a longer green time (45 s)
+- Marks the medium-traffic lane as wait (yellow) and the remaining lane as stop (red)
+- Detects license plates with a separate YOLO model and reads the text with EasyOCR
+- Shows live vehicle count, active lane, green time, lane status and emergency status
 
+## How It Works
+
+**1. Vehicle and emergency-vehicle detection**
+A custom YOLO model detects vehicles and emergency vehicles in each video frame. When an emergency vehicle is found, its lane is identified and given immediate priority.
+
+**2. Lane-based counting**
+The frame is split into three lanes (Left, Middle, Right). Each detection is assigned to a lane using the horizontal position of its bounding-box center, and vehicles are counted per lane.
+
+**3. Emergency priority**
 If an emergency vehicle is detected:
+- its lane signal changes to `EMERGENCY GO`
+- green time is set to 45 seconds
+- all other lanes stay stopped
 
-The emergency vehicle's lane receives priority
-The corresponding signal changes to EMERGENCY GO
-Green signal time is set to 45 seconds
-Other lanes remain stopped
+**4. Normal traffic management**
+With no emergency vehicle, the three lane counts are compared:
+- highest traffic lane → 🟢 GO
+- medium traffic lane → 🟡 WAIT
+- remaining lane → 🔴 STOP
 
-This helps create a clear path for emergency vehicles.
+Normal green time is currently fixed at 25 seconds.
 
-4. Intelligent Traffic Management
+**5. License plate detection and OCR**
+A second YOLO model finds plate regions. Each plate is cropped from the frame, read with EasyOCR (restricted to alphanumeric characters), and shown with the text and confidence score.
 
-When no emergency vehicle is present, the system compares the number of vehicles in all three lanes.
+**Detection colors:** 🟢 emergency vehicle · 🔴 normal car · 🟡 license plate
 
-Highest traffic lane → 🟢 GO
-Medium traffic lane → 🟡 WAIT
-Remaining lane → 🔴 STOP
+---
 
-The normal green signal duration is set to 25 seconds in the current implementation.
+## Tech Stack
 
-5. License Plate Detection & OCR
+Python · Ultralytics YOLO · OpenCV · EasyOCR
 
-A separate YOLO model detects license plate regions.
+## Project Structure
 
-The detected license plate is then:
-
-Cropped from the video frame
-Processed using EasyOCR
-Restricted to alphanumeric characters
-Displayed with the detected text and confidence score
-🛠️ Tech Stack
-Python
-OpenCV
-Ultralytics YOLO
-EasyOCR
-📂 Project Files
+```
 SmartTrafficAI/
-│
 ├── main.py
-├── New_emergency-best.pt
-├── license_plate_best.pt
-│
+├── New_emergency-best.pt      # emergency vehicle detection model
+├── license_plate_best.pt      # license plate detection model
+├── requirements.txt
 └── videos/
-    └── traffic.mp4
+    └── traffic.mp4            # place your input video here
+```
 
-Note: The YOLO model files and video file should be placed in the appropriate paths before running the project.
+> The model files and the input video must be in the paths used by `main.py` before you run the project.
 
-▶️ Installation
+## Installation and Usage
 
-Install the required Python libraries:
-
-pip install opencv-python ultralytics easyocr
-🚀 Run the Project
+```bash
+git clone https://github.com/AmanAgrawalAI/SmartTrafficAI.git
+cd SmartTrafficAI
+pip install -r requirements.txt
 python main.py
+```
 
-Press Q to close the Smart Traffic AI window.
+Press **Q** to close the Smart Traffic AI window.
 
-📺 System Output
-
-The system displays:
-
-Detected vehicles with bounding boxes
-Emergency vehicle alerts
-License plate detection and OCR results
-Total vehicle count
-Active green lane
-Green signal duration
-Left, Middle, and Right lane status
-Dynamic traffic signals for all three lanes
-Detection Colors
-🟢 Green → Emergency Vehicle
-🔴 Red → Normal Car
-🟡 Yellow → License Plate
-🔮 Future Improvements
-Real-time CCTV camera integration
-Automatic traffic signal hardware control
-Vehicle tracking to avoid duplicate counting
-Improved OCR preprocessing for better license plate recognition
-Dynamic green signal timing based on real-time congestion
-Support for more vehicle classes
-Web dashboard for traffic monitoring
-Cloud deployment and real-time alerts
-👨‍💻 Author
-
-Aman Agrawal
-
-⭐ If you find this project interesting, consider giving the repository a star!
-
-## Project Screenshots
-
-<img width="1241" height="779" alt="Screenshot 2026-08-23 210604" src="https://github.com/user-attachments/assets/a6cfebff-0dcb-4f4b-89bc-acd1fe0ebe12" />
-### Fire Truck Detection
-
-<img width="1246" height="780" alt="Screenshot 2026-08-23 210907" src="https://github.com/user-attachments/assets/ff55d377-2e70-4168-8e6d-3d0f6f4fb4c4" />
-### Ambulance Detection
-
-<img width="1239" height="777" alt="Screenshot 2026-08-23 211207" src="https://github.com/user-attachments/assets/30ab5a06-2257-4eba-87aa-7545f993f734" />
-### Police Detection
-
-<img width="1238" height="781" alt="Screenshot 2026-08-23 210715" src="https://github.com/user-attachments/assets/cc545c8c-7a95-4501-9842-cb15a80dba13" />
-### Ambulance Detection in Night Time
-
-<img width="1240" height="777" alt="Screenshot 2026-08-23 210301" src="https://github.com/user-attachments/assets/2a9a7388-8927-4c7f-b1c4-f310c5b112d9" />
-### Ambulance Detection Different Angle
+## Screenshots
 
 
+**Fire truck detection**
+<img width="1241" height="779" alt="Screenshot 2026-08-23 210604" src="https://github.com/user-attachments/assets/37a588ea-6c0a-458c-8c05-acd91a027203" />
 
 
+**Ambulance detection**
+<img width="1246" height="780" alt="Screenshot 2026-08-23 210907" src="https://github.com/user-attachments/assets/7fabe297-4047-4039-9ac2-7153f2da3d60" />
 
 
+**Police detection**
+<img width="1239" height="777" alt="Screenshot 2026-08-23 211207" src="https://github.com/user-attachments/assets/4b4fdd25-4bed-44d6-9415-32cf035278a3" />
 
+
+**Ambulance detection at night**
+<img width="1238" height="781" alt="Screenshot 2026-08-23 210715" src="https://github.com/user-attachments/assets/79372dbd-2d78-43b5-9dfc-8534c1607f8f" />
+
+
+**Ambulance from a different angle**
+<img width="1240" height="777" alt="Screenshot 2026-08-23 210301" src="https://github.com/user-attachments/assets/56f83582-5c52-4f1e-9000-3c1cc8efef9e" />
+
+
+---
+
+## Limitations and Future Improvements
+
+- Green time is fixed (25 s normal, 45 s emergency); make it adapt to real-time congestion
+- Add vehicle tracking to avoid counting the same vehicle twice
+- Improve OCR preprocessing for better plate recognition
+- Add more fire-truck and night-time images to improve recall
+- Integrate live CCTV input and signal hardware control
+- Web dashboard, cloud deployment and real-time alerts
+
+## Author
+
+**Aman Kumar**
+GitHub: [AmanAgrawalAI](https://github.com/AmanAgrawalAI) · LinkedIn: [aman-kumar-788677378](https://linkedin.com/in/aman-kumar-788677378)
+
+## License
+
+Released under the MIT License.
+
+⭐ If you find this project useful, consider giving the repository a star!
