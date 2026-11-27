@@ -136,7 +136,6 @@ Press **Q** to close the Smart Traffic AI window.
 - Integrate live CCTV input and signal hardware control
 - Web dashboard, cloud deployment and real-time alerts
 
----
 
 ## 👨‍💻 Author
 
