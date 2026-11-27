@@ -136,10 +136,14 @@ Press **Q** to close the Smart Traffic AI window.
 - Integrate live CCTV input and signal hardware control
 - Web dashboard, cloud deployment and real-time alerts
 
-## Author
+---
+
+## 👨‍💻 Author
 
 **Aman Kumar**
-GitHub: [AmanAgrawalAI](https://github.com/AmanAgrawalAI) · LinkedIn: [aman-kumar-788677378](https://linkedin.com/in/aman-kumar-788677378)
+Aspiring Data Scientist | Python · Machine Learning · Computer Vision
+
+[LinkedIn](https://www.linkedin.com/in/aman-kumar-788677378) • [GitHub](https://github.com/AmanAgrawalAI) • [Email](https://mail.google.com/mail/?view=cm&fs=1&to=amanagrawal06922@gmail.com)
 
 ## License
 
