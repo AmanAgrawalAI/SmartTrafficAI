@@ -124,6 +124,8 @@ Press **Q** to close the Smart Traffic AI window.
 **Ambulance from a different angle**
 <img width="1240" height="777" alt="Screenshot 2026-08-23 210301" src="https://github.com/user-attachments/assets/56f83582-5c52-4f1e-9000-3c1cc8efef9e" />
 
+## Project Demo video link here
+https://lnkd.in/p/gEf2C65a
 
 ---
 
@@ -135,7 +137,6 @@ Press **Q** to close the Smart Traffic AI window.
 - Add more fire-truck and night-time images to improve recall
 - Integrate live CCTV input and signal hardware control
 - Web dashboard, cloud deployment and real-time alerts
-
 
 ## 👨‍💻 Author
 
